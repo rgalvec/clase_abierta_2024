@@ -6,4 +6,4 @@ Bienvenido/a a la **Clase Introductoria a R**. El objetivo de esta clase es comp
 de tres asuntos: **Breve reseña de la Fundación SOL**, **Perspectiva del trabajo con Datos**, **Caso práctico de una app básica de 
 Shiny sobre financiamiento de campañas electorales 2024 en chile**
 
-🔗 **Enlace a la clase completa:** [Clase Introductoria a R](https://ragc.quarto.pub/intror_r_edd/)
+🔗 **Enlace para visualizar la clase completa:** [Clase Introductoria a R](https://ragc.quarto.pub/intror_r_edd/)
