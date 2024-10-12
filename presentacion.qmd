@@ -1,0 +1,195 @@
+---
+title: "Introducción a la programación en R"
+lang: es
+subtitle: "¿Quiénes financian las campañas 2024?"
+author: "Clase abierta - Fundación SOL"
+date: 10/10/2024
+date-format: "dddd, D MMM , YYYY"
+format:
+  revealjs:
+    theme: night
+    incremental: true
+    logo: logoblanco.png
+---
+
+# ¿Quienes son ustedes?
+
+# ¿Quiénes somos?
+  
+ [Fundación SOL](https://fundacionsol.cl)
+
+- **Más de 17 años** de trabajo colectivo autogestionado.
+- Institución que busca aportar al **debate crítico**.
+- Trabajamos principalmente en actividades de **investigación y acción con organizaciones de trabajadores**. 
+- Realizamos clases en la **academia** y estamos en **constante autoformación**.
+
+# ![Financiamiento2023](img/finaciamiento_2023.png){fig-align="center"} 
+
+[Mira nuestra memoria 2023](https://fundacionsol.cl/memoriaanual2023#)
+
+# Investigar es nuestra pasión{background-image="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExMDkzaTgyYzdyNXVjajZnNXJkMTJjZWVkdWp4b2N6eTJxaGF6bjN4bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3ov9jZafEefHLyTf8c/giphy.gif" background-size="contain"}
+
+
+# ¿Qué veremos hoy?
+
+ **Aportes de Campaña** para las **Elecciones Regionales y Municipales 2024**.
+
+- **Objetivo**: Visualizar los aportes recibidos por candidatos y partidos políticos para las campañas 2024 utilizando fuentes abiertas de información (*mientras aprendemos a programar nuestros reportes*).
+- **Herramientas**: 
+  - Código R y Shiny, presentación Quarto, entre otras.
+  
+# Fuentes abiertas
+
+- La posibilidad de acceder a los datos es importante y tiene mucho valor. En este caso trabajamos con una planilla (*comunmente llamada: base de datos*) que se encuentra disponible gracias al trabajo de quienes sistematizaron la información y/o datos que la conforman.
+
+- Los datos de fuentes abiertas muchas veces requieren un trabajo posterior, de "transformación de datos" en donde la información se procesa para los objetivos de investigación particulares. 
+
+# Metodología
+
+- Abordar el tratamiento de datos requiere definiciones metodológicas claras. Generalmente se definen antes de comenzar el tratamiento, en la etapa de diseño de la investigación. 
+
+- Podemos pensar en una metodología general y procesos más puntuales o métodos específicos para abordad el tratamiento de datos específico.
+
+# ¿Por qué los datos?{background-image="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExYjRobHFmbXg3NWxtemlnNDJ1cWg3Z296OTJta3A3bjY0bjYzcXZ2ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FUHP8acFnlo0cuGuA0/giphy.gif" background-opacity="0.5"}
+
+ 
+ - Pensamiento crítico
+ - Trabajo colectivo
+ - Situación histórica
+ - Poder
+ 
+# ¿Por qué R?
+ 
+ - Libre y gratis
+ - Comunidad de apoyo
+ - Pensado para estadística
+
+
+#  Reporte esperado
+![Shiny app "básica"](img/tablero.png)
+  
+# Carga de Librerías 
+  
+  Para construir la aplicación Shiny, utilizamos varias librerías de R que facilitan la manipulación de datos, la creación de interfaces interactivas y la visualización de información.
+
+ 
+
+```{.r code-line-numbers="3|8"}
+library(ggplot2)
+library(DT)
+library(tidyverse)
+library(shinyWidgets)
+library(shinydashboard)
+library(shinythemes)
+library(stringi)
+library(shiny)
+library(bslib)
+library(openxlsx)
+library(janitor)
+library(scales)
+```
+
+# Carga planilla
+
+La planilla a utilizar corresponde a la que pone a disposición el  [sito web del SERVEL](https://servel.cl) (Servicio electoral de Chile)
+
+# Código de carga
+
+```{.r code-line-numbers="1|3|4"}
+ruta <- "https://www.dropbox.com/scl/fi/yrvmdh33sh5mptrzoiczc/Reporte_Aportes_DEFINITIVAS_241004.xlsx?rlkey=zefujy57j9czuaj05jbl9iv72&st=04krizcz&dl=1"
+
+data <- openxlsx::read.xlsx(ruta, startRow = 8) |> 
+        janitor::clean_names()
+```
+
+- En este caso cargaremos un planilla que ya ha sido sometida a un proceso de limpieza. Porque la preparación de nuestros datos por lo general es...
+
+# Trabajo duro{background-image="https://media.giphy.com/media/FaIDQOgN69FXq/giphy.gif" background-size="contain"}
+
+# Transformaciones básicas
+
+```{.r code-line-numbers="1|3|4|6|20"}
+data <- data %>%
+    mutate(
+        territorio_electoral = toupper(stri_trans_general(territorio_electoral,
+        "Latin-ASCII")),
+        territorio_electoral = case_when(
+            territorio_electoral == "-" ~ "PARTIDO POLITICO",
+            TRUE ~ as.factor(territorio_electoral)
+        ),
+        tipo_de_aporte = as.factor(tipo_de_aporte),
+        nombre_aportante = as.factor(nombre_aportante),
+        nombre_aportante = case_when(
+            nombre_aportante == "-" ~ "Aportes menores sin identificar",
+            TRUE ~ as.factor(nombre_aportante)
+        ),
+        tipo_eleccion = as.factor(str_trim(eleccion, side = "both"))
+    )
+
+```
+
+# Sigamos mirando nuestro código en un IDE{width=90}
+
+- ¿Qué es un IDE?
+   Es la sigla en inglés para **I**ntegrated **D**evelopment **E**nvironment, es español se podría traducir como: *Entorno de desarrollo integrado*. 
+   
+# Entonces...
+   
+   *Básicamente: sera nuestro lugar favorito para escribir código y hacer nuestro trabajo más sencillo*
+   
+   Conocer algunos conceptos generales del ámbito de la programación, nos llevará, generalmente a aprender algunas palabras en *inglés* (*¿más colonialismo intelectual?*)
+   
+   
+# {background-image="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNzh0amNrZDEwandvYzhrOGtlbGd1ZjBkeXZmeG44MzlmbHFnaXZ5ayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xL7PDV9frcudO/giphy.gif" background-size="contain"}
+
+# Antes de irnos...
+
+[Tu aporte es fundamental *(estás a un click de apoyar)*](https://fundacionsol.cl/dona-ahora)
+
+# Nuestra Escuela de Datos
+
+- Desarrollar un espacio abierto a la participación masiva, orientado a personas que realicen activismo o actividades laborales donde utilicen herramientas de programación o potencialmente puedan utilizarlas.
+
+# Fortalecimiento
+
+- Adicionalmente, se espera que proceso formativo sea de utilidad para organizaciones sindicales y populares, mediante la enseñanza del uso de herramientas de software libre para fortalecer sus procesos internos vinculados con la [comunicación o sistematización de datos.]{.fragment .highlight-red}
+
+
+# Descripción
+
+Los videos de clases quedarán disponibles y además se generarán 4 cápsulas de 30 minutos con profundización de algunos temas, más dos de 15 minutos relacionadas con la instalación y uso general de software. 
+
+# Clases
+
+- *Trabajo con datos*: ¿Qué son los datos?
+ ¿Por qué abordar el uso de datos y qué datos generamos en las organizaciones?
+ ¿Qué herramientas nos pueden facilitar el uso de datos?
+ 
+-  *Estadística*: ¿Por qué puede ser una compañía para los procesos internos de nuestras organizaciones?
+              Algunas medidas importantes para considerar: media, mediana, percentiles
+             [La estadística en nuestra vida cotidiana.]{.fragment .highlight-red}
+
+# Clases
+
+- *Programación*: Herramientas, estilos y por qué puede facilitar los procesos [automatizar tareas.]{.fragment .highlight-red}
+ Conceptos clave sobre programación en general y la programación para el análisis de datos o automatización de procesos. 
+ 
+ - *Generación de un análisis descriptivo*:
+              Trabajo de limpieza de una planilla de datos pública.
+              Primeros tabulados a partir de nuestros datos
+              [Análisis de distribuciones y
+ Gráficos.]{.fragment .highlight-red}
+ 
+# Clases 
+
+- *Aplicaciones - 1*:  Envío de correos y creación de [tablero de resumen de datos o dashboard.
+]{.fragment .highlight-red}
+- *Aplicaciones - 2*:  Página web estática con Git y actualización desde consola.
+
+# Periodicidad
+
+1 vez por semana desde el jueves 17 de octubre al jueves 28 de noviembre (1 feriado del 31 de octubre)
+
+# Gracias!
+
+
