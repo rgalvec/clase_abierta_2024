@@ -10,6 +10,9 @@ format:
     theme: night
     incremental: true
     logo: logoblanco.png
+project:
+  type: website
+  output-dir: docs
 ---
 
 # ¿Quienes son ustedes?
